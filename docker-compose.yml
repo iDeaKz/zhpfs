@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: zhpfs_db
+      POSTGRES_USER: zhpfs_user
+      POSTGRES_PASSWORD: YourSecurePassword123!
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - zhpfs-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://zhpfs_user:YourSecurePassword123!@db:5432/zhpfs_db
+    networks:
+      - zhpfs-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - zhpfs-network
+
+volumes:
+  db_data:
+
+networks:
+  zhpfs-network:
